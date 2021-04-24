@@ -1,2 +1,210 @@
 #:kivy 2.0.0
 #: import hex kivy.utils.get_color_from_hex
+<LoginMenu>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: hex("#49677B")                
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    Label:
+        font_size: 30
+        text: "Account Sign-In"
+        pos_hint: {"x": 0,"y": 0.43}
+    Label:
+        font_size: 20
+        text: "Username"
+        pos_hint: {"x": -0.2,"y": 0.185}
+    Label:
+        font_size: 20
+        text: "Password"
+        pos_hint: {"x": -0.2,"y": 0.085}
+    TextInput:
+        id: textinput_username
+        multiline: "False"
+        pos_hint: {"x": 0.39,"y": 0.65}
+        size_hint: 0.2, 0.07
+    TextInput:
+        id: textinput_password
+        multiline: "False"
+        pos_hint: {"x": 0.39,"y": 0.55}
+        size_hint: 0.2, 0.07
+    Button:
+        text: "Login"
+        size_hint: 0.09, 0.09
+        pos_hint: {"x": 0.45,"y": 0.4}
+        on_press: root.onLogin()
+    Button:
+        text: "Signup"
+        size_hint: 0.09, 0.09
+        pos_hint: {"x": 0.45,"y": 0.3}
+        on_press: 
+            root.manager.transition.direction = "up"
+            root.manager.current = "signupmenu"
+    Button:
+        id: exit_button1
+        text: "Exit"
+        size_hint: 0.09, 0.09
+        on_press: app.stop()
+<SignupMenu>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: hex("#49677B")                
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    Label:
+        font_size: 30
+        text: "Account Signup"
+        pos_hint: {"x": 0,"y": 0.43}
+    Label:
+        font_size: 20
+        text: "Username"
+        pos_hint: {"x": -0.2,"y": 0.185}
+    Label:
+        font_size: 20
+        text: "Password"
+        pos_hint: {"x": -0.2,"y": 0.085}
+    TextInput:
+        id: signup_username
+        multiline: "False"
+        pos_hint: {"x": 0.39,"y": 0.65}
+        size_hint: 0.2, 0.07
+    TextInput:
+        id: signup_password
+        multiline: "False"
+        pos_hint: {"x": 0.39,"y": 0.55}
+        size_hint: 0.2, 0.07
+    Button:
+        text: "Submit"
+        size_hint: 0.09, 0.09
+        pos_hint: {"x": 0.45,"y": 0.4}
+        on_press: root.submit()
+    Button:
+        text: "Return"
+        size_hint: 0.08, 0.08
+        on_press: 
+            root.manager.transition.direction = "down"
+            root.manager.current = "loginmenu"
+<MainMenu>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: hex("#49677B")                
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    Label:
+        font_size: 30
+        text: "Welcome, User!"
+        pos_hint: {"x": 0,"y": 0.43}
+    Button:
+        id: exit_button2
+        text: "Exit"
+        size_hint: 0.09, 0.09
+        on_press: app.stop()
+    Button:
+        id: logout_button
+        text: "Logout"
+        size_hint: 0.09, 0.09
+        pos_hint: {"x": 0.12,"y": 0}
+        on_press: 
+            root.manager.transition.direction = "right"
+            root.manager.current = "loginmenu"
+    Button:
+        text: "Library"
+        size_hint: 0.1, 0.1
+        pos_hint: {"x": 0.45,"y": 0.65}
+        on_press: 
+            root.manager.transition.direction = "left"
+            root.manager.current = "librarymenu"
+    Button:
+        text: "Checkout"
+        size_hint: 0.1, 0.1
+        pos_hint: {"x": 0.45,"y": 0.5}
+        on_press: 
+            root.manager.transition.direction = "left"
+            root.manager.current = "checkoutmenu"
+    Button:
+        text: "My Books"
+        size_hint: 0.12, 0.1
+        pos_hint: {"x": 0.44,"y": 0.35}
+        on_press: 
+            root.manager.transition.direction = "left"
+            root.manager.current = "mybooksmenu"
+<LibraryMenu>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: hex("#49677B")                
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    Label:
+        font_size: 30
+        text: "Search Library"
+        pos_hint: {"x": 0,"y": 0.43}
+    Label:
+        id: dbentry
+        font_size: 20
+        text: ""
+        pos_hint: {"x": 0.05,"y": 0}
+    TextInput:
+        id: userSearch
+        multiline: "False"
+        text: ""
+        pos_hint: {"x": 0.37,"y": 0.7}
+        size_hint: 0.25, 0.07
+    Button:
+        text: "Search"
+        size_hint: 0.09, 0.09
+        pos_hint: {"x": 0.45,"y": 0}
+        on_press: root.getBooks()
+    Button:
+        id: return_button1
+        text: "Return"
+        size_hint: 0.08, 0.08
+        on_press: 
+            root.clearSearch()
+            root.manager.transition.direction = "right"
+            root.manager.current = "mainmenu"
+<CheckoutMenu>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: hex("#49677B")                
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    Label:
+        font_size: 30
+        text: "Checkout Books"
+        pos_hint: {"x": 0,"y": 0.35}
+    Button:
+        id: return_button2
+        text: "Return"
+        size_hint: 0.08, 0.08
+        on_press: 
+            root.manager.transition.direction = "right"
+            root.manager.current = "mainmenu"
+<MyBooksMenu>:
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: hex("#49677B")                
+            Rectangle:
+                pos: self.pos
+                size: self.size
+    Label:
+        font_size: 30
+        text: "My Books"
+        pos_hint: {"x": 0,"y": 0.35}
+    Button:
+        id: return_button3
+        text: "Return"
+        size_hint: 0.08, 0.08
+        on_press: 
+            root.manager.transition.direction = "right"
+            root.manager.current = "mainmenu"
