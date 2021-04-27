@@ -127,7 +127,6 @@
         on_press: 
             root.manager.transition.direction = "left"
             root.manager.current = "checkoutmenu"
-            root.updatecart()
     Button:
         text: "My Books"
         size_hint: 0.12, 0.1
@@ -230,6 +229,12 @@
     size: 100, 60
     size_hint: None, None
 
+<RemoveFromCartButton>:
+    # Draw a background to indicate selection
+    text: "Remove"
+    size: 100, 60
+    size_hint: None, None
+
 <Book>:
     text_size: root.width, 60
     size: self.texture_size
@@ -245,6 +250,7 @@
     valign: 'middle'
 
 <CheckoutMenu>:
+    id: checkoutmenu
     BoxLayout:
         orientation: 'vertical'
         canvas.before:
@@ -285,7 +291,7 @@
                     id: box
                     size_hint: .84, 1
                     RecycleView
-                        id: checkouttable
+                        id: checkout
                         viewclass: 'Book'
                         data: [{'text': x} for x in root.books]
                         size_hint: 1, 1
@@ -297,19 +303,28 @@
                             default_size_hint: 1, None
                             height: self.minimum_height
                             orientation: 'lr-tb'
-                GridLayout:
-                    orientation: 'tb-lr'
-                    id: removegrid
-                    cols: 1
-                    spacing: 10
-                    size_hint: .14, 1
-        Button:
-            id: return_button2
-            text: "Return"
-            size_hint: 0.08, 0.08
-            on_press:
-                root.manager.transition.direction = "right"
-                root.manager.current = "mainmenu"
+                    GridLayout:
+                        orientation: 'tb-lr'
+                        id: removegrid
+                        cols: 1
+                        spacing: 10
+                        size_hint: .14, 1
+        FloatLayout:
+            orientation: 'horizontal'
+            Button:
+                id: return_button2
+                text: "Return"
+                size_hint: 0.1, 0.2
+                on_press:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "mainmenu"
+            Button:
+                id: checkout_button
+                text: "Checkout"
+                size_hint: 0.1, 0.2
+                pos_hint: {'center_x': .5}
+                on_press:
+                    root.checkout()
 <MyBooksMenu>:
     FloatLayout:
         canvas.before:

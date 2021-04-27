@@ -1,4 +1,5 @@
 import threading
+from datetime import date
 
 import kivy
 from kivy.app import App
@@ -24,6 +25,7 @@ from kivy.base import runTouchApp
 
 checkout = []
 librarybookids = []
+userid = 1
 
 class LoginMenu(Screen):
     # Process to connect to Database
@@ -50,15 +52,19 @@ class LoginMenu(Screen):
 
     # Function that logs in a user through checking database for their credentials and moves to main menu
     def onLogin(self):
-        self.credQuery = "select username, password from member\nwhere username=%s"
+        global userid
+        self.credQuery = "select memberid, username, password from member\nwhere username=%s"
         self.tupleExample = (self.ids.textinput_username.text,)
         self.cursor.execute(self.credQuery, self.tupleExample)
+        user = self.cursor.fetchone()
         if (self.ids.textinput_username.text == self.testUser and
                 self.ids.textinput_password.text == self.testPassword):
             self.manager.current = "mainmenu"
             self.ids.textinput_username.text = ""
             self.ids.textinput_password.text = ""
-        elif (self.cursor.fetchone()):
+        elif(user is not None and self.ids.textinput_username.text == user[1] and
+                self.ids.textinput_password.text == user[2]):
+            userid = user[0]
             self.manager.current = "mainmenu"
             self.ids.textinput_username.text = ""
             self.ids.textinput_password.text = ""
@@ -91,39 +97,8 @@ class SignupMenu(Screen):
 
 
 class MainMenu(Screen):
-    books = []
-    def updatecart(self):
-        global checkout
-        self.books = []
-        self.cart = []
+    pass
 
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
-        parseResult = urlparse(jdbc)
-        dbConnection = None
-        try:
-            dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
-        except Error as e:
-            print(e)
-
-        self.cursor = dbConnection.cursor()
-        if len(checkout) is not 0:
-            self.getQuery = "select name, author_fname, author_lname, ISBN, genre from books where bookid="
-            for x in checkout:
-                self.cursor.execute(self.getQuery + str(x))
-                self.records = self.cursor.fetchall()
-                self.books.append(self.records)
-
-            for row in self.books:
-                for col in row:
-                    for data in col:
-                        self.cart.append(data)
-
-            print(self.cart)
-
-            #self.ids.checkouttable.data = [{"text": str(x)} for x in self.cart]
 
 class AddToCartButton(Button):
     ''' Add selection support to the Button '''
@@ -135,6 +110,20 @@ class AddToCartButton(Button):
     def addtocart(self):
         global checkout
         checkout.append(self.bookid)
+        LibraryApp.sm.get_screen('checkoutmenu').updatecart()
+        print(checkout)
+
+class RemoveFromCartButton(Button):
+    ''' Add selection support to the Button '''
+    bookid = None
+
+    def on_press(self):
+        threading.Thread(target=self.removefromcart).start()
+
+    def removefromcart(self):
+        global checkout
+        checkout.remove(self.bookid)
+        LibraryApp.sm.get_screen('checkoutmenu').updatecart()
         print(checkout)
 
 class LibraryMenu(Screen):
@@ -214,36 +203,101 @@ class LibraryMenu(Screen):
 class SelectableRecycleGridLayout(FocusBehavior, LayoutSelectionBehavior, RecycleGridLayout):
     pass
 
-
 class Book(RecycleDataViewBehavior, Label):
     pass
-
 
 class Hlabel(Label):
     pass
 
-
 class CheckoutMenu(Screen):
     books = []
+    bad_chars = ['{', '}', "'"]
+    def updatecart(self):
+        global checkout
+        self.books = []
+        self.cart = []
+        self.ids.removegrid.clear_widgets()
+
+        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        parseResult = urlparse(jdbc)
+        dbConnection = None
+        try:
+            dbConnection = mysql.connector.connect(host=parseResult.hostname,
+                                                   user="admin",
+                                                   password="password",
+                                                   database="libraryapp")
+        except Error as e:
+            print(e)
+
+        self.cursor = dbConnection.cursor()
+        if len(checkout) is not 0:
+            self.getQuery = "select name, author_fname, author_lname, ISBN, genre from books where bookid="
+            for x in checkout:
+                self.cursor.execute(self.getQuery + str(x))
+                self.records = self.cursor.fetchall()
+                self.books.append(self.records)
+
+            for row in self.books:
+                for col in row:
+                    for data in col:
+                        if data is col[4]:
+                            data = ' '.join(i for i in data if not i in self.bad_chars)
+                        self.cart.append(data)
+
+            for x in range(len(checkout)):
+                button = RemoveFromCartButton()
+                button.bookid = checkout[x]
+                self.ids.removegrid.add_widget(button)
+        else: self.cart = []
+
+        self.ids.checkout.data = [{"text": str(x)} for x in self.cart]
+
+    def checkout(self):
+        global checkout
+        global userid
+        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        parseResult = urlparse(jdbc)
+        dbConnection = None
+        try:
+            dbConnection = mysql.connector.connect(host=parseResult.hostname,
+                                                   user="admin",
+                                                   password="password",
+                                                   database="libraryapp")
+        except Error as e:
+            print(e)
+
+        self.cursor = dbConnection.cursor()
+        if len(checkout) is not 0:
+            today = date.today()
+
+            # dd/mm/YY
+            current_date = today.strftime("%m/%d/%Y")
+            print(current_date)
+            for x in checkout:
+                self.insertQuery = "insert into history(bookid, memberid, reserve_date) values(" + str(x) + ", " + str(userid) + ", str_to_date('" + current_date + "', '%m/%d/%Y'))"
+                self.cursor.execute(self.insertQuery)
+                dbConnection.commit()
+
+        checkout = []
+        self.updatecart()
 
 
 class MyBooksMenu(Screen):
     pass
 
-
 class LibraryInterfaceApp(App):
     def build(self):
-        sm = ScreenManager()
-        sm.add_widget(CheckoutMenu(name='checkoutmenu'))
-        sm.add_widget(LibraryMenu(name='librarymenu'))
-        sm.add_widget(LoginMenu(name='loginmenu'))
-        sm.add_widget(SignupMenu(name='signupmenu'))
-        sm.add_widget(MainMenu(name='mainmenu'))
+        self.sm = ScreenManager()
+        self.sm.add_widget(LoginMenu(name='loginmenu'))
+        self.sm.add_widget(CheckoutMenu(name='checkoutmenu'))
+        self.sm.add_widget(LibraryMenu(name='librarymenu'))
 
-
-        sm.add_widget(MyBooksMenu(name='mybooksmenu'))
-        return sm
+        self.sm.add_widget(SignupMenu(name='signupmenu'))
+        self.sm.add_widget(MainMenu(name='mainmenu'))
+        self.sm.add_widget(MyBooksMenu(name='mybooksmenu'))
+        return self.sm
 
 
 if __name__ == "__main__":
-    LibraryInterfaceApp().run()
+    LibraryApp = LibraryInterfaceApp()
+    LibraryApp.run()
