@@ -134,42 +134,96 @@
         on_press: 
             root.manager.transition.direction = "left"
             root.manager.current = "mybooksmenu"
+
+<RV>:
+
+
 <LibraryMenu>:
-    FloatLayout:
+    BoxLayout:
+        orientation: "vertical"
         canvas.before:
             Color:
-                rgba: hex("#49677B")                
+                rgba: hex("#49677B")
             Rectangle:
                 pos: self.pos
                 size: self.size
-    Label:
-        font_size: 30
-        text: "Search Library"
-        pos_hint: {"x": 0,"y": 0.43}
-    Label:
-        id: dbentry
-        font_size: 20
-        text: ""
-        pos_hint: {"x": 0.05,"y": 0}
-    TextInput:
-        id: userSearch
-        multiline: "False"
-        text: ""
-        pos_hint: {"x": 0.37,"y": 0.7}
-        size_hint: 0.25, 0.07
-    Button:
-        text: "Search"
-        size_hint: 0.09, 0.09
-        pos_hint: {"x": 0.45,"y": 0}
-        on_press: root.getBooks()
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 1, .4
+            padding: [0, 20, 0, 0]
+            spacing: 20
+            Label:
+                font_size: 30
+                size_hint: 1, .1
+                text: "Search Library"
+                pos_hint: {'center_x': .5, 'y': 0}
+            TextInput:
+                id: userSearch
+                multiline: "False"
+                text: ""
+                size_hint: 0.5, 0.1
+                pos_hint: {'center_x': .5}
+            Button:
+                text: "Search"
+                size_hint: 0.1, 0.1
+                pos_hint: {'center_x': .5}
+                on_press: root.getbooksthread()
+
+        GridLayout:
+            size_hint: (1, .2)
+            cols: 6
+
+            Hlabel:
+                text: "Title"
+            Hlabel:
+                text: "Author First Name"
+            Hlabel:
+                text: "Author Last Name"
+            Hlabel:
+                text: "ISBN"
+            Hlabel:
+                text: "Genre"
+            Hlabel:
+                text: "Stock"
+
+
+        BoxLayout:
+            id: box
+            size_hint: 1,1
+            RecycleView
+                id: bookstable
+                viewclass: 'Book'
+                data: [{'text': str(x)} for x in root.books]
+                size_hint: 1, 1
+                SelectableRecycleGridLayout:
+                    cols: 6
+                    default_size: None, dp(26)
+                    default_size_hint: 1, None
+                    height: self.minimum_height
+                    orientation: 'lr-tb'
     Button:
         id: return_button1
         text: "Return"
         size_hint: 0.08, 0.08
-        on_press: 
+        on_press:
             root.clearSearch()
             root.manager.transition.direction = "right"
             root.manager.current = "mainmenu"
+
+<Book>:
+    text_size: root.width, None
+    size: self.texture_size
+    halign: 'center'
+    valign: 'center'
+    # Draw a background to indicate selection
+
+<Hlabel>:
+    text_size: root.width, None
+    padding: 10, 0
+    size: self.texture_size
+    halign: 'center'
+    valign: 'center'
+
 <CheckoutMenu>:
     FloatLayout:
         canvas.before:
@@ -208,3 +262,4 @@
         on_press: 
             root.manager.transition.direction = "right"
             root.manager.current = "mainmenu"
+
