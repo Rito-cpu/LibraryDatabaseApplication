@@ -135,6 +135,7 @@
         on_press: 
             root.manager.transition.direction = "left"
             root.manager.current = "mybooksmenu"
+            root.getmybooksthread()
 
 <LibraryMenu>:
     BoxLayout:
@@ -226,7 +227,7 @@
                     root.manager.current = "mainmenu"
 <AddToCartButton>:
     # Draw a background to indicate selection
-    text: "Add To Cart"
+    text: "Reserve"
     size: 100, 60
     size_hint: None, None
 
@@ -327,22 +328,60 @@
                 on_press:
                     root.checkout()
 <MyBooksMenu>:
-    FloatLayout:
+    BoxLayout:
+        orientation: 'vertical'
         canvas.before:
             Color:
-                rgba: hex("#49677B")                
+                rgba: hex("#49677B")
             Rectangle:
                 pos: self.pos
                 size: self.size
-    Label:
-        font_size: 30
-        text: "My Books"
-        pos_hint: {"x": 0,"y": 0.35}
-    Button:
-        id: return_button3
-        text: "Return"
-        size_hint: 0.08, 0.08
-        on_press: 
-            root.manager.transition.direction = "right"
-            root.manager.current = "mainmenu"
+        Label:
+            pos_hint: {'center_x': .5, 'y': 0}
+            size_hint: 1, .2
+            font_size: 30
+            text: "My Books"
+            pos_hint: {"x": 0,"y": 0.35}
 
+        GridLayout:
+            size_hint: (1, .15)
+            cols: 5
+            spacing: [5]
+            Hlabel:
+                text: "Title"
+            Hlabel:
+                text: "Author First Name"
+            Hlabel:
+                text: "Author Last Name"
+            Hlabel:
+                text: "ISBN"
+            Hlabel:
+                text: "Checkout Date"
+        BoxLayout:
+            size_hint: 1, .6
+            GridLayout:
+                cols: 2
+                size_hint_x: 1
+                BoxLayout:
+                    id: box
+                    size_hint: .84, 1
+                    RecycleView
+                        id: mybookstable
+                        viewclass: 'Book'
+                        data: [{'text': x} for x in root.books]
+                        size_hint: 1, 1
+                        RecycleGridLayout:
+                            cols: 5
+                            spacing: [10]
+                            valign: 'middle'
+                            default_size: None, dp(26)
+                            default_size_hint: 1, None
+                            height: self.minimum_height
+                            orientation: 'lr-tb'
+        Button:
+            id: return_button3
+            text: "Return"
+            size_hint: 0.08, 0.08
+            on_press:
+                root.manager.transition.direction = "right"
+                root.manager.current = "mainmenu"

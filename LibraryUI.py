@@ -97,6 +97,9 @@ class SignupMenu(Screen):
 
 
 class MainMenu(Screen):
+    def getmybooksthread(self):
+        threading.Thread(target=LibraryApp.sm.get_screen('mybooksmenu').getbooks).start()
+
     def logout(self):
         global userid, checkout
         userid = None
@@ -133,9 +136,6 @@ class LibraryMenu(Screen):
 
     bad_chars = ['{', '}', "'"]
     books = []
-
-    def getbooksthread(self):
-        threading.Thread(target=self.getbooks).start()
 
     def getbooks(self):
 
