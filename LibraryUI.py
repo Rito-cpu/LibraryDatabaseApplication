@@ -286,7 +286,49 @@ class CheckoutMenu(Screen):
 
 
 class MyBooksMenu(Screen):
-    pass
+    books = []
+
+    def getbooksthread(self):
+        threading.Thread(target=self.getbooks).start()
+
+    def getbooks(self):
+        global userid
+        self.books = []
+        self.ids.mybookstable.data = [{'text': str(x)} for x in self.books]
+        self.ids.mybookstable.refresh_from_viewport()
+        # connectDB()
+        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        parseResult = urlparse(jdbc)
+        dbConnection = None
+        try:
+            dbConnection = mysql.connector.connect(host=parseResult.hostname,
+                                                   user="admin",
+                                                   password="password",
+                                                   database="libraryapp")
+        except Error as e:
+            print(e)
+
+        self.getQuery = ""
+        self.cursor = dbConnection.cursor()
+        self.records = ""
+
+        self.getQuery = "select books.name, books.author_fname, books.author_lname, books.ISBN, history.checkout_date from history " \
+                        "left join books " \
+                        "on history.bookid = books.bookid " \
+                        "left join member " \
+                        "on history.memberid = member.memberid " \
+                        "where history.memberid = " + str(userid) + " and history.checkin_date is NULL"
+        self.cursor.execute(self.getQuery)
+        self.records = self.cursor.fetchall()
+
+        for row in self.records:
+            for col in row:
+                self.books.append(col)
+
+        self.ids.mybookstable.data = [{'text': str(x)} for x in self.books]
+        self.ids.mybookstable.refresh_from_data()
+        self.ids.mybookstable.refresh_from_layout()
+        self.ids.mybookstable.refresh_from_viewport()
 
 class LibraryInterfaceApp(App):
     def build(self):
