@@ -124,9 +124,6 @@ class MainMenu(Screen):
             print(self.cart)
 
             #self.ids.checkouttable.data = [{"text": str(x)} for x in self.cart]
-            self.ids.checkouttable.refresh_from_data()
-            self.ids.checkouttable.refresh_from_layout()
-            self.ids.checkouttable.refresh_from_viewport()
 
 class AddToCartButton(Button):
     ''' Add selection support to the Button '''
