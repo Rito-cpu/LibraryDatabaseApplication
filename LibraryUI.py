@@ -244,7 +244,6 @@ class CheckoutMenu(Screen):
 
 
 class MyBooksMenu(Screen):
-    bad_chars = ['{', '}', "'"]
     books = []
 
     def getbooksthread(self):
