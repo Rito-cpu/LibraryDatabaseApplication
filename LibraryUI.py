@@ -1,4 +1,5 @@
 import threading
+from datetime import date
 
 import kivy
 from kivy.app import App
@@ -24,7 +25,7 @@ from kivy.base import runTouchApp
 
 checkout = []
 librarybookids = []
-userid = None
+userid = 1
 
 class LoginMenu(Screen):
     # Process to connect to Database
@@ -61,8 +62,8 @@ class LoginMenu(Screen):
             self.manager.current = "mainmenu"
             self.ids.textinput_username.text = ""
             self.ids.textinput_password.text = ""
-        elif (user is not None and self.ids.textinput_username.text == user[1] and
-              self.ids.textinput_password.text == user[2]):
+        elif(user is not None and self.ids.textinput_username.text == user[1] and
+                self.ids.textinput_password.text == user[2]):
             userid = user[0]
             self.manager.current = "mainmenu"
             self.ids.textinput_username.text = ""
@@ -96,39 +97,14 @@ class SignupMenu(Screen):
 
 
 class MainMenu(Screen):
-    books = []
-    def updatecart(self):
-        global checkout
-        self.books = []
-        self.cart = []
+    def getmybooksthread(self):
+        threading.Thread(target=LibraryApp.sm.get_screen('mybooksmenu').getbooks).start()
 
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
-        parseResult = urlparse(jdbc)
-        dbConnection = None
-        try:
-            dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
-        except Error as e:
-            print(e)
+    def logout(self):
+        global userid, checkout
+        userid = None
+        checkout = []
 
-        self.cursor = dbConnection.cursor()
-        if len(checkout) is not 0:
-            self.getQuery = "select name, author_fname, author_lname, ISBN, genre from books where bookid="
-            for x in checkout:
-                self.cursor.execute(self.getQuery + str(x))
-                self.records = self.cursor.fetchall()
-                self.books.append(self.records)
-
-            for row in self.books:
-                for col in row:
-                    for data in col:
-                        self.cart.append(data)
-
-            print(self.cart)
-
-            #self.ids.checkouttable.data = [{"text": str(x)} for x in self.cart]
 
 class AddToCartButton(Button):
     ''' Add selection support to the Button '''
@@ -140,15 +116,26 @@ class AddToCartButton(Button):
     def addtocart(self):
         global checkout
         checkout.append(self.bookid)
+        LibraryApp.sm.get_screen('checkoutmenu').updatecart()
+        print(checkout)
+
+class RemoveFromCartButton(Button):
+    ''' Add selection support to the Button '''
+    bookid = None
+
+    def on_press(self):
+        threading.Thread(target=self.removefromcart).start()
+
+    def removefromcart(self):
+        global checkout
+        checkout.remove(self.bookid)
+        LibraryApp.sm.get_screen('checkoutmenu').updatecart()
         print(checkout)
 
 class LibraryMenu(Screen):
 
     bad_chars = ['{', '}', "'"]
     books = []
-
-    def getbooksthread(self):
-        threading.Thread(target=self.getbooks).start()
 
     def getbooks(self):
 
@@ -175,12 +162,6 @@ class LibraryMenu(Screen):
         # records = cursor.fetchall()
         self.records = ""
         if (self.ids.userSearch.text == ""):
-            #Clear search after pressing "Search" again so results don't stack up
-            self.books = []
-            self.ids.bookstable.data = [{'text': str(x)} for x in self.books]
-            self.ids.bookstable.refresh_from_viewport()
-            self.ids.addtocartbox.clear_widgets()
-
             self.getQuery = "select name, author_fname, author_lname, ISBN, genre, stock from books"
             self.cursor.execute(self.getQuery)
             self.records = self.cursor.fetchall()
@@ -188,11 +169,6 @@ class LibraryMenu(Screen):
             self.cursor.execute(self.getQuery)
             librarybookids = self.cursor.fetchall()
         else:
-            self.books = []
-            self.ids.bookstable.data = [{'text': str(x)} for x in self.books]
-            self.ids.bookstable.refresh_from_viewport()
-            self.ids.addtocartbox.clear_widgets()
-
             self.getQuery = "select name, author_fname, author_lname, ISBN, genre, stock from books\nwhere name like '%" + self.ids.userSearch.text + "%'"
             self.cursor.execute(self.getQuery)
             self.records = self.cursor.fetchall()
@@ -230,17 +206,83 @@ class LibraryMenu(Screen):
 class SelectableRecycleGridLayout(FocusBehavior, LayoutSelectionBehavior, RecycleGridLayout):
     pass
 
-
 class Book(RecycleDataViewBehavior, Label):
     pass
-
 
 class Hlabel(Label):
     pass
 
-
 class CheckoutMenu(Screen):
     books = []
+    bad_chars = ['{', '}', "'"]
+    def updatecart(self):
+        global checkout
+        self.books = []
+        self.cart = []
+        self.ids.removegrid.clear_widgets()
+
+        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        parseResult = urlparse(jdbc)
+        dbConnection = None
+        try:
+            dbConnection = mysql.connector.connect(host=parseResult.hostname,
+                                                   user="admin",
+                                                   password="password",
+                                                   database="libraryapp")
+        except Error as e:
+            print(e)
+
+        self.cursor = dbConnection.cursor()
+        if len(checkout) is not 0:
+            self.getQuery = "select name, author_fname, author_lname, ISBN, genre from books where bookid="
+            for x in checkout:
+                self.cursor.execute(self.getQuery + str(x))
+                self.records = self.cursor.fetchall()
+                self.books.append(self.records)
+
+            for row in self.books:
+                for col in row:
+                    for data in col:
+                        if data is col[4]:
+                            data = ' '.join(i for i in data if not i in self.bad_chars)
+                        self.cart.append(data)
+
+            for x in range(len(checkout)):
+                button = RemoveFromCartButton()
+                button.bookid = checkout[x]
+                self.ids.removegrid.add_widget(button)
+        else: self.cart = []
+
+        self.ids.checkout.data = [{"text": str(x)} for x in self.cart]
+
+    def checkout(self):
+        global checkout
+        global userid
+        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        parseResult = urlparse(jdbc)
+        dbConnection = None
+        try:
+            dbConnection = mysql.connector.connect(host=parseResult.hostname,
+                                                   user="admin",
+                                                   password="password",
+                                                   database="libraryapp")
+        except Error as e:
+            print(e)
+
+        self.cursor = dbConnection.cursor()
+        if len(checkout) is not 0:
+            today = date.today()
+
+            # dd/mm/YY
+            current_date = today.strftime("%m/%d/%Y")
+            print(current_date)
+            for x in checkout:
+                self.insertQuery = "insert into history(bookid, memberid, reserve_date) values(" + str(x) + ", " + str(userid) + ", str_to_date('" + current_date + "', '%m/%d/%Y'))"
+                self.cursor.execute(self.insertQuery)
+                dbConnection.commit()
+
+        checkout = []
+        self.updatecart()
 
 
 class MyBooksMenu(Screen):
@@ -265,11 +307,11 @@ class MyBooksMenu(Screen):
                                                    database="libraryapp")
         except Error as e:
             print(e)
-        
+
         self.getQuery = ""
         self.cursor = dbConnection.cursor()
         self.records = ""
-        
+
         self.getQuery = "select books.name, books.author_fname, books.author_lname, books.ISBN, history.checkout_date from history " \
                         "left join books " \
                         "on history.bookid = books.bookid " \
@@ -287,24 +329,20 @@ class MyBooksMenu(Screen):
         self.ids.mybookstable.refresh_from_data()
         self.ids.mybookstable.refresh_from_layout()
         self.ids.mybookstable.refresh_from_viewport()
-        
 
 class LibraryInterfaceApp(App):
-    currentUser = ""
-
     def build(self):
-        sm = ScreenManager()
-        sm.add_widget(LoginMenu(name='loginmenu'))
-        sm.add_widget(CheckoutMenu(name='checkoutmenu'))
-        sm.add_widget(LibraryMenu(name='librarymenu'))
+        self.sm = ScreenManager()
+        self.sm.add_widget(LoginMenu(name='loginmenu'))
+        self.sm.add_widget(CheckoutMenu(name='checkoutmenu'))
+        self.sm.add_widget(LibraryMenu(name='librarymenu'))
 
-        sm.add_widget(SignupMenu(name='signupmenu'))
-        sm.add_widget(MainMenu(name='mainmenu'))
-
-
-        sm.add_widget(MyBooksMenu(name='mybooksmenu'))
-        return sm
+        self.sm.add_widget(SignupMenu(name='signupmenu'))
+        self.sm.add_widget(MainMenu(name='mainmenu'))
+        self.sm.add_widget(MyBooksMenu(name='mybooksmenu'))
+        return self.sm
 
 
 if __name__ == "__main__":
-    LibraryInterfaceApp().run()
+    LibraryApp = LibraryInterfaceApp()
+    LibraryApp.run()
