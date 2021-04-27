@@ -213,18 +213,15 @@
                     cols: 1
                     spacing: 10
                     size_hint: .14, 1
-    GridLayout:
-        cols: 2
+    FloatLayout:
         size_hint: 1, .1
-        BoxLayout:
-            size_hint: 0.01, 1
-            Button:
-                id: return_button1
-                text: "Return"
-                on_press:
-                    root.clearSearch()
-                    root.manager.transition.direction = "right"
-                    root.manager.current = "mainmenu"
+        Button:
+            id: return_button1
+            text: "Return"
+            on_press:
+                root.clearSearch()
+                root.manager.transition.direction = "right"
+                root.manager.current = "mainmenu"
 <AddToCartButton>:
     # Draw a background to indicate selection
     text: "Reserve"

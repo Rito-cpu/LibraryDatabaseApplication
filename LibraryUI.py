@@ -117,7 +117,6 @@ class AddToCartButton(Button):
         global checkout
         checkout.append(self.bookid)
         LibraryApp.sm.get_screen('checkoutmenu').updatecart()
-        print(checkout)
 
 class RemoveFromCartButton(Button):
     ''' Add selection support to the Button '''
@@ -136,6 +135,8 @@ class LibraryMenu(Screen):
 
     bad_chars = ['{', '}', "'"]
     books = []
+    def getbooksthread(self):
+        threading.Thread(target=self.getbooks).start()
 
     def getbooks(self):
 
