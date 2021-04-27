@@ -24,6 +24,7 @@ from kivy.base import runTouchApp
 
 checkout = []
 librarybookids = []
+userid = None
 
 class LoginMenu(Screen):
     # Process to connect to Database
@@ -50,17 +51,19 @@ class LoginMenu(Screen):
 
     # Function that logs in a user through checking database for their credentials and moves to main menu
     def onLogin(self):
-        app = App.get_running_app()
-        self.credQuery = "select username, password from member\nwhere username=%s"
+        global userid
+        self.credQuery = "select memberid, username, password from member\nwhere username=%s"
         self.tupleExample = (self.ids.textinput_username.text,)
-        app.currentUser = self.ids.textinput_username.text
         self.cursor.execute(self.credQuery, self.tupleExample)
+        user = self.cursor.fetchone()
         if (self.ids.textinput_username.text == self.testUser and
                 self.ids.textinput_password.text == self.testPassword):
             self.manager.current = "mainmenu"
             self.ids.textinput_username.text = ""
             self.ids.textinput_password.text = ""
-        elif (self.cursor.fetchone()):
+        elif (user is not None and self.ids.textinput_username.text == user[1] and
+              self.ids.textinput_password.text == user[2]):
+            userid = user[0]
             self.manager.current = "mainmenu"
             self.ids.textinput_username.text = ""
             self.ids.textinput_password.text = ""
@@ -248,12 +251,10 @@ class MyBooksMenu(Screen):
         threading.Thread(target=self.getbooks).start()
 
     def getbooks(self):
-        app = App.get_running_app()
-        global librarybookids
+        global userid
         self.books = []
-        self.ids.bookstable.data = [{'text': str(x)} for x in self.books]
-        self.ids.bookstable.refresh_from_viewport()
-        self.ids.addtocartbox.clear_widgets()
+        self.ids.mybookstable.data = [{'text': str(x)} for x in self.books]
+        self.ids.mybookstable.refresh_from_viewport()
         # connectDB()
         jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
         parseResult = urlparse(jdbc)
@@ -270,17 +271,23 @@ class MyBooksMenu(Screen):
         self.cursor = dbConnection.cursor()
         self.records = ""
         
-        self.getQuery = "select books.name, history.checkout_date from history\nleft join books\non history.bookid = books.bookid\nleft join member\non history.memberid = member.memberid\nwhere history.memberid = " + app.currentUser + " and history.checkin_date is NULL"
+        self.getQuery = "select books.name, books.author_fname, books.author_lname, books.ISBN, history.checkout_date from history " \
+                        "left join books " \
+                        "on history.bookid = books.bookid " \
+                        "left join member " \
+                        "on history.memberid = member.memberid " \
+                        "where history.memberid = " + str(userid) + " and history.checkin_date is NULL"
         self.cursor.execute(self.getQuery)
         self.records = self.cursor.fetchall()
 
         for row in self.records:
             for col in row:
-                if col is row[4]:
-                    col = ' '.join(i for i in col if not i in self.bad_chars)
                 self.books.append(col)
 
-        print(self.books)
+        self.ids.mybookstable.data = [{'text': str(x)} for x in self.books]
+        self.ids.mybookstable.refresh_from_data()
+        self.ids.mybookstable.refresh_from_layout()
+        self.ids.mybookstable.refresh_from_viewport()
         
 
 class LibraryInterfaceApp(App):
@@ -288,9 +295,10 @@ class LibraryInterfaceApp(App):
 
     def build(self):
         sm = ScreenManager()
+        sm.add_widget(LoginMenu(name='loginmenu'))
         sm.add_widget(CheckoutMenu(name='checkoutmenu'))
         sm.add_widget(LibraryMenu(name='librarymenu'))
-        sm.add_widget(LoginMenu(name='loginmenu'))
+
         sm.add_widget(SignupMenu(name='signupmenu'))
         sm.add_widget(MainMenu(name='mainmenu'))
 

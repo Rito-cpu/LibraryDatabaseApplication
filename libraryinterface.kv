@@ -333,7 +333,7 @@
 
         GridLayout:
             size_hint: (1, .15)
-            cols: 6
+            cols: 5
             spacing: [5]
             Hlabel:
                 text: "Title"
@@ -344,9 +344,7 @@
             Hlabel:
                 text: "ISBN"
             Hlabel:
-                text: "Genre"
-            Hlabel:
-                text: ""
+                text: "Checkout Date"
         BoxLayout:
             size_hint: 1, .6
             GridLayout:
@@ -356,7 +354,7 @@
                     id: box
                     size_hint: .84, 1
                     RecycleView
-                        id: checkouttable
+                        id: mybookstable
                         viewclass: 'Book'
                         data: [{'text': x} for x in root.books]
                         size_hint: 1, 1
@@ -368,12 +366,6 @@
                             default_size_hint: 1, None
                             height: self.minimum_height
                             orientation: 'lr-tb'
-                GridLayout:
-                    orientation: 'tb-lr'
-                    id: removegrid
-                    cols: 1
-                    spacing: 10
-                    size_hint: .14, 1
         Button:
             id: return_button3
             text: "Return"
