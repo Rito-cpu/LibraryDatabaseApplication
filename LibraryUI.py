@@ -97,7 +97,10 @@ class SignupMenu(Screen):
 
 
 class MainMenu(Screen):
-    pass
+    def logout(self):
+        global userid, checkout
+        userid = None
+        checkout = []
 
 
 class AddToCartButton(Button):
