@@ -162,7 +162,8 @@ class LibraryMenu(Screen):
         global librarybookids
         self.books = []
         self.ids.bookstable.data = [{'text': str(x)} for x in self.books]
-        self.ids.bookstable.refresh_from_viewport()
+        self.ids.bookstable.refresh_from_data()
+        self.ids.librarydatagrid.clear_widgets()
         self.ids.addtocartbox.clear_widgets()
         # connectDB()
         jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
@@ -210,8 +211,6 @@ class LibraryMenu(Screen):
 
         self.ids.bookstable.data = [{'text': str(x)} for x in self.books]
         self.ids.bookstable.refresh_from_data()
-        self.ids.bookstable.refresh_from_layout()
-        self.ids.bookstable.refresh_from_viewport()
 
     def clearSearch(self):
         self.ids.userSearch.text = ""
