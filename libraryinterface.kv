@@ -250,33 +250,31 @@
                 text: "Stock"
             Hlabel:
                 text: ""
-        BoxLayout:
+        GridLayout:
+            cols: 2
             size_hint: 1, .6
+            BoxLayout:
+                id: box
+                size_hint: .84, 1
+                RecycleView
+                    id: bookstable
+                    viewclass: 'Book'
+                    data: [{'text': str(x)} for x in root.books]
+                    size_hint: 1, 1
+                    RecycleGridLayout:
+                        id: librarydatagrid
+                        cols: 6
+                        spacing: [20]
+                        valign: 'middle'
+                        default_size: None, dp(26)
+                        default_size_hint: 1, None
+                        height: self.minimum_height
             GridLayout:
-                cols: 2
-                size_hint_x: 1
-                BoxLayout:
-                    id: box
-                    size_hint: .84, 1
-                    RecycleView
-                        id: bookstable
-                        viewclass: 'Book'
-                        data: [{'text': str(x)} for x in root.books]
-                        size_hint: 1, 1
-                        RecycleGridLayout:
-                            cols: 6
-                            spacing: [10]
-                            valign: 'middle'
-                            default_size: None, dp(26)
-                            default_size_hint: 1, None
-                            height: self.minimum_height
-                            orientation: 'lr-tb'
-                GridLayout:
-                    orientation: 'tb-lr'
-                    id: addtocartbox
-                    cols: 1
-                    spacing: 10
-                    size_hint: .14, 1
+                orientation: 'tb-lr'
+                id: addtocartbox
+                cols: 1
+                spacing: 10
+                size_hint: .14, 1
     FloatLayout:
         size_hint: 1, .1
         orientation: 'horizontal'
