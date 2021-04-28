@@ -34,7 +34,9 @@
         text: "Login"
         size_hint: 0.09, 0.09
         pos_hint: {"x": 0.45,"y": 0.4}
-        on_press: root.onLogin()
+        on_press:
+            root.manager.transition.direction = "left"
+            root.onLogin()
     Button:
         text: "Signup"
         size_hint: 0.09, 0.09
@@ -48,94 +50,156 @@
         size_hint: 0.09, 0.09
         on_press: app.stop()
 <SignupMenu>:
-    FloatLayout:
+    BoxLayout:
+        orientation: 'vertical'
         canvas.before:
             Color:
                 rgba: hex("#49677B")                
             Rectangle:
                 pos: self.pos
                 size: self.size
-    Label:
-        font_size: 30
-        text: "Account Signup"
-        pos_hint: {"x": 0,"y": 0.43}
-    Label:
-        font_size: 20
-        text: "Username"
-        pos_hint: {"x": -0.2,"y": 0.185}
-    Label:
-        font_size: 20
-        text: "Password"
-        pos_hint: {"x": -0.2,"y": 0.085}
-    TextInput:
-        id: signup_username
-        multiline: "False"
-        pos_hint: {"x": 0.39,"y": 0.65}
-        size_hint: 0.2, 0.07
-    TextInput:
-        id: signup_password
-        multiline: "False"
-        pos_hint: {"x": 0.39,"y": 0.55}
-        size_hint: 0.2, 0.07
-    Button:
-        text: "Submit"
-        size_hint: 0.09, 0.09
-        pos_hint: {"x": 0.45,"y": 0.4}
-        on_press: root.submit()
-    Button:
-        text: "Return"
-        size_hint: 0.08, 0.08
-        on_press: 
-            root.manager.transition.direction = "down"
-            root.manager.current = "loginmenu"
+        Label:
+            font_size: 30
+            text: "Account Signup"
+            pos_hint: {"center_x": .5}
+            size_hint: 1, .2
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            size_hint: 1, .8
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    font_size: 20
+                    text: "First Name"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 1, .05
+                TextInput:
+                    id: signup_fname
+                    multiline: "False"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 0.4, 0.1
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    font_size: 20
+                    text: "Last Name"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 1, .05
+                TextInput:
+                    id: signup_lname
+                    multiline: "False"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 0.4, 0.1
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    font_size: 20
+                    text: "Username"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 1, .1
+                TextInput:
+                    id: signup_username
+                    multiline: "False"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 0.4, 0.1
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    font_size: 20
+                    text: "Password"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 1, .05
+                TextInput:
+                    id: signup_password
+                    multiline: "False"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 0.4, 0.1
+            BoxLayout:
+                orientation: 'vertical'
+                Label:
+                    font_size: 20
+                    text: "Birthday"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 1, .1
+                TextInput:
+                    id: signup_bday
+                    multiline: "False"
+                    pos_hint: {"center_x": .5}
+                    size_hint: 0.4, 0.1
+                    hint_text: 'MM/DD/YYYY'
+        FloatLayout:
+            size_hint: 1, .2
+            Button:
+                text: "Submit"
+                size_hint: 0.1, 0.4
+                pos_hint: {"center_x": .5}
+                on_press: root.submit()
+            Button:
+                text: "Return"
+                size_hint: 0.1, 0.4
+                pos_hint: {"center_x": .1}
+                on_press:
+                    root.manager.transition.direction = "down"
+                    root.manager.current = "loginmenu"
 <MainMenu>:
-    FloatLayout:
+    BoxLayout:
+        orientation: 'vertical'
         canvas.before:
             Color:
                 rgba: hex("#49677B")                
             Rectangle:
                 pos: self.pos
                 size: self.size
-    Label:
-        font_size: 30
-        text: "Welcome, User!"
-        pos_hint: {"x": 0,"y": 0.43}
-    Button:
-        id: exit_button2
-        text: "Exit"
-        size_hint: 0.09, 0.09
-        on_press: app.stop()
-    Button:
-        id: logout_button
-        text: "Logout"
-        size_hint: 0.09, 0.09
-        pos_hint: {"x": 0.12,"y": 0}
-        on_press: 
-            root.manager.transition.direction = "right"
-            root.manager.current = "loginmenu"
-            root.logout()
-    Button:
-        text: "Library"
-        size_hint: 0.1, 0.1
-        pos_hint: {"x": 0.45,"y": 0.65}
-        on_press: 
-            root.manager.transition.direction = "left"
-            root.manager.current = "librarymenu"
-    Button:
-        text: "Checkout"
-        size_hint: 0.1, 0.1
-        pos_hint: {"x": 0.45,"y": 0.5}
-        on_press: 
-            root.manager.transition.direction = "left"
-            root.manager.current = "checkoutmenu"
-    Button:
-        text: "My Books"
-        size_hint: 0.12, 0.1
-        pos_hint: {"x": 0.44,"y": 0.35}
-        on_press: 
-            root.manager.transition.direction = "left"
-            root.manager.current = "mybooksmenu"
-            root.getmybooksthread()
+        Label:
+            font_size: 30
+            text: "Welcome, User!"
+            pos_hint: {"center_x": .5}
+            size_hint: 1, 1.5
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: 1, 2
+            spacing: 50
+            Button:
+                text: "Library"
+                size_hint: 0.15, 0.1
+                pos_hint: {"center_x": .5}
+                on_press:
+                    root.manager.transition.direction = "left"
+                    root.manager.current = "librarymenu"
+            Button:
+                text: "Reserve Books"
+                size_hint: 0.15, 0.1
+                pos_hint: {"center_x": .5}
+                on_press:
+                    root.manager.transition.direction = "left"
+                    root.manager.current = "checkoutmenu"
+            Button:
+                text: "My Books"
+                size_hint: 0.15, 0.1
+                pos_hint: {"center_x": .5}
+                on_press:
+                    root.manager.transition.direction = "left"
+                    root.manager.current = "mybooksmenu"
+                    root.getmybooksthread()
+        FloatLayout:
+            Button:
+                id: exit_button2
+                text: "Exit"
+                size_hint: 0.12, 0.4
+                pos_hint: {"x": 0.02,"y": 0}
+                on_press: app.stop()
+            Button:
+                id: logout_button
+                text: "Logout"
+                size_hint: 0.12, 0.4
+                pos_hint: {"x": 0.2,"y": 0}
+                on_press:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "loginmenu"
+                    root.logout()
+
+
 
 <LibraryMenu>:
     BoxLayout:
@@ -215,9 +279,11 @@
                     size_hint: .14, 1
     FloatLayout:
         size_hint: 1, .1
+        orientation: 'horizontal'
         Button:
             id: return_button1
             text: "Return"
+            size_hint: 0.1, 1
             on_press:
                 root.clearSearch()
                 root.manager.transition.direction = "right"
@@ -262,7 +328,7 @@
             pos_hint: {'center_x': .5, 'y': 0}
             size_hint: 1, .2
             font_size: 30
-            text: "Checkout Books"
+            text: "Reserve Books"
             pos_hint: {"x": 0,"y": 0.35}
 
         GridLayout:

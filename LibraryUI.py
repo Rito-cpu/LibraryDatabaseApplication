@@ -22,6 +22,7 @@ import mysql.connector
 from mysql.connector import Error
 from urllib.parse import urlparse
 from kivy.base import runTouchApp
+from datetime import datetime
 
 checkout = []
 librarybookids = []
@@ -71,29 +72,48 @@ class LoginMenu(Screen):
 
 
 class SignupMenu(Screen):
-    jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
-    parseResult = urlparse(jdbc)
-    dbConnection = None
-    try:
-        dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                               user="admin",
-                                               password="password",
-                                               database="libraryapp")
-    except Error as e:
-        print(e)
 
     addQuery = ""
-    cursor = dbConnection.cursor()
     records = ""
     tupleHolder = ""
 
     def submit(self):
+        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        parseResult = urlparse(jdbc)
+        dbConnection = None
+        try:
+            dbConnection = mysql.connector.connect(host=parseResult.hostname,
+                                                   user="admin",
+                                                   password="password",
+                                                   database="libraryapp")
+        except Error as e:
+            print(e)
+            return
         # insert into member (username, password)\nvalues ()
-        if (self.ids.signup_username.text != "" and self.ids.signup_password.text != ""):
-            self.addQuery = "insert into member (username, password)\nvalues (%s, %s)"
-            self.tupleHolder = (self.ids.signup_username.text, self.ids.signup_password.text,)
-            # self.cursor.execute(self.addQuery, (self.ids.signup_username.text, self.ids.signup_password.text))
-            self.cursor.execute(self.addQuery, self.tupleHolder)
+        self.cursor = dbConnection.cursor()
+        try:
+            datetime.strptime(self.ids.signup_bday.text, '%m/%d/%Y')
+        except ValueError:
+            print("Incorrect data format, should be MM/DD/YYYY")
+            return
+
+        if (self.ids.signup_username.text != "" and self.ids.signup_password.text != "" and self.ids.signup_fname.text != "" and self.ids.signup_lname.text != ""):
+            self.addQuery = "insert into member(first_name, last_name, username, password, birthdate) " \
+                            "values('" + self.ids.signup_fname.text + "', '" + self.ids.signup_lname.text + \
+                            "', '" + self.ids.signup_username.text + "', '" + self.ids.signup_password.text + \
+                            "', str_to_date('" + self.ids.signup_bday.text + "', '%m/%d/%Y'))"
+            print(self.addQuery)
+            self.cursor.execute(self.addQuery)
+            dbConnection.commit()
+            self.ids.signup_username.text = ""
+            self.ids.signup_password.text = ""
+            self.ids.signup_fname.text = ""
+            self.ids.signup_lname.text = ""
+            self.ids.signup_bday.text = ""
+            LibraryApp.sm.transition.direction = "down"
+            LibraryApp.sm.current = "loginmenu"
+
+
 
 
 class MainMenu(Screen):
@@ -129,7 +149,6 @@ class RemoveFromCartButton(Button):
         global checkout
         checkout.remove(self.bookid)
         LibraryApp.sm.get_screen('checkoutmenu').updatecart()
-        print(checkout)
 
 class LibraryMenu(Screen):
 
@@ -188,8 +207,6 @@ class LibraryMenu(Screen):
             button = AddToCartButton()
             button.bookid = librarybookids[x][0]
             self.ids.addtocartbox.add_widget(button)
-
-        print(self.books)
 
         self.ids.bookstable.data = [{'text': str(x)} for x in self.books]
         self.ids.bookstable.refresh_from_data()
@@ -276,7 +293,6 @@ class CheckoutMenu(Screen):
 
             # dd/mm/YY
             current_date = today.strftime("%m/%d/%Y")
-            print(current_date)
             for x in checkout:
                 self.insertQuery = "insert into history(bookid, memberid, reserve_date) values(" + str(x) + ", " + str(userid) + ", str_to_date('" + current_date + "', '%m/%d/%Y'))"
                 self.cursor.execute(self.insertQuery)
@@ -335,11 +351,14 @@ class LibraryInterfaceApp(App):
     def build(self):
         self.sm = ScreenManager()
         self.sm.add_widget(LoginMenu(name='loginmenu'))
+        self.sm.add_widget(SignupMenu(name='signupmenu'))
+        self.sm.add_widget(MainMenu(name='mainmenu'))
+
         self.sm.add_widget(CheckoutMenu(name='checkoutmenu'))
         self.sm.add_widget(LibraryMenu(name='librarymenu'))
 
-        self.sm.add_widget(SignupMenu(name='signupmenu'))
-        self.sm.add_widget(MainMenu(name='mainmenu'))
+
+
         self.sm.add_widget(MyBooksMenu(name='mybooksmenu'))
         return self.sm
 
