@@ -23,6 +23,7 @@ from mysql.connector import Error
 from urllib.parse import urlparse
 from kivy.base import runTouchApp
 from datetime import datetime
+from databaseinfo import database
 
 checkout = []
 librarybookids = []
@@ -30,14 +31,14 @@ userid = 1
 
 class LoginMenu(Screen):
     # Process to connect to Database
-    jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+    jdbc = database.host
     parseResult = urlparse(jdbc)
     dbConnection = None
     try:
         dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                               user="admin",
-                                               password="password",
-                                               database="libraryapp")
+                                               user=database.username,
+                                               password=database.password,
+                                               database=database.name)
     except Error as e:
         print(e)
 
@@ -78,14 +79,14 @@ class SignupMenu(Screen):
     tupleHolder = ""
 
     def submit(self):
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        jdbc = database.host
         parseResult = urlparse(jdbc)
         dbConnection = None
         try:
             dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
+                                                   user=database.username,
+                                                   password=database.password,
+                                                   database=database.name)
         except Error as e:
             print(e)
             return
@@ -166,14 +167,14 @@ class LibraryMenu(Screen):
         self.ids.librarydatagrid.clear_widgets()
         self.ids.addtocartbox.clear_widgets()
         # connectDB()
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        jdbc = database.host
         parseResult = urlparse(jdbc)
         dbConnection = None
         try:
             dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
+                                                   user=database.username,
+                                                   password=database.password,
+                                                   database=database.name)
         except Error as e:
             print(e)
 
@@ -238,14 +239,14 @@ class CheckoutMenu(Screen):
         self.cart = []
         self.ids.removegrid.clear_widgets()
 
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        jdbc = database.host
         parseResult = urlparse(jdbc)
         dbConnection = None
         try:
             dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
+                                                   user=database.username,
+                                                   password=database.password,
+                                                   database=database.name)
         except Error as e:
             print(e)
 
@@ -275,14 +276,14 @@ class CheckoutMenu(Screen):
     def checkout(self):
         global checkout
         global userid
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        jdbc = database.host
         parseResult = urlparse(jdbc)
         dbConnection = None
         try:
             dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
+                                                   user=database.username,
+                                                   password=database.password,
+                                                   database=database.name)
         except Error as e:
             print(e)
 
@@ -313,14 +314,14 @@ class MyBooksMenu(Screen):
         self.ids.mybookstable.data = [{'text': str(x)} for x in self.books]
         self.ids.mybookstable.refresh_from_viewport()
         # connectDB()
-        jdbc = "jdbcmysql://library-app-instance-1.ckyrcuyndxij.us-east-2.rds.amazonaws.com:3306"
+        jdbc = database.host
         parseResult = urlparse(jdbc)
         dbConnection = None
         try:
             dbConnection = mysql.connector.connect(host=parseResult.hostname,
-                                                   user="admin",
-                                                   password="password",
-                                                   database="libraryapp")
+                                                   user=database.username,
+                                                   password=database.password,
+                                                   database=database.name)
         except Error as e:
             print(e)
 
